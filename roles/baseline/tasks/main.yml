@@ -1,0 +1,16 @@
+---
+- name: Include NTP tasks
+  ansible.builtin.include_tasks: ntp.yml
+  tags: [ntp]
+
+- name: Include SSH hardening tasks
+  ansible.builtin.include_tasks: ssh.yml
+  tags: [ssh]
+
+- name: Include firewall tasks
+  ansible.builtin.include_tasks: firewall.yml
+  tags: [firewall]
+
+- name: Include MOTD tasks
+  ansible.builtin.include_tasks: motd.yml
+  tags: [motd]

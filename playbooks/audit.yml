@@ -1,0 +1,107 @@
+---
+- name: Audit baseline compliance
+  hosts: all
+  become: true
+  gather_facts: true
+
+  vars:
+    audit_passed: true
+
+  tasks:
+    # --- NTP Audit ---
+    - name: "AUDIT | Check if chrony is installed"
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: "AUDIT | Verify chrony package"
+      ansible.builtin.assert:
+        that:
+          - "'chrony' in ansible_facts.packages"
+        fail_msg: "FAIL: chrony is niet geinstalleerd"
+        success_msg: "PASS: chrony is geinstalleerd"
+
+    - name: "AUDIT | Check chrony service status"
+      ansible.builtin.service_facts:
+
+    - name: "AUDIT | Verify chrony is running"
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services['chrony.service'].state == 'running'"
+        fail_msg: "FAIL: chrony service draait niet"
+        success_msg: "PASS: chrony service draait"
+
+    - name: "AUDIT | Check chrony synchronisation"
+      ansible.builtin.command: chronyc tracking
+      register: chrony_tracking
+      changed_when: false
+
+    - name: "AUDIT | Show chrony sync status"
+      ansible.builtin.debug:
+        msg: "{{ chrony_tracking.stdout_lines }}"
+
+    # --- SSH Audit ---
+    - name: "AUDIT | Read sshd_config"
+      ansible.builtin.slurp:
+        src: /etc/ssh/sshd_config
+      register: sshd_config_content
+
+    - name: "AUDIT | Verify SSH settings"
+      ansible.builtin.assert:
+        that:
+          - "'PermitRootLogin prohibit-password' in sshd_config_content.content | b64decode"
+          - "'PasswordAuthentication no' in sshd_config_content.content | b64decode"
+          - "'MaxAuthTries 3' in sshd_config_content.content | b64decode"
+        fail_msg: "FAIL: SSH configuratie is niet correct gehardened"
+        success_msg: "PASS: SSH configuratie is correct gehardened"
+
+    # --- Firewall Audit ---
+    - name: "AUDIT | Check UFW status"
+      ansible.builtin.command: ufw status verbose
+      register: ufw_status
+      changed_when: false
+
+    - name: "AUDIT | Show UFW status"
+      ansible.builtin.debug:
+        msg: "{{ ufw_status.stdout_lines }}"
+
+    - name: "AUDIT | Verify UFW is active"
+      ansible.builtin.assert:
+        that:
+          - "'Status: active' in ufw_status.stdout"
+        fail_msg: "FAIL: UFW firewall is niet actief"
+        success_msg: "PASS: UFW firewall is actief"
+
+    - name: "AUDIT | Verify UFW default deny incoming"
+      ansible.builtin.assert:
+        that:
+          - "'Default: deny (incoming)' in ufw_status.stdout"
+        fail_msg: "FAIL: UFW default incoming is niet deny"
+        success_msg: "PASS: UFW default incoming is deny"
+
+    # --- MOTD Audit ---
+    - name: "AUDIT | Read MOTD"
+      ansible.builtin.slurp:
+        src: /etc/motd
+      register: motd_content
+
+    - name: "AUDIT | Verify MOTD content"
+      ansible.builtin.assert:
+        that:
+          - "'Beheerd door Ansible via Semaphore' in motd_content.content | b64decode"
+        fail_msg: "FAIL: MOTD bevat niet de verwachte tekst"
+        success_msg: "PASS: MOTD is correct geconfigureerd"
+
+    # --- Summary ---
+    - name: "AUDIT | Compliance samenvatting"
+      ansible.builtin.debug:
+        msg:
+          - "============================================"
+          - "  AUDIT RESULTAAT - {{ inventory_hostname }}"
+          - "============================================"
+          - "  Chrony    : geinstalleerd en actief"
+          - "  SSH       : gehardened"
+          - "  UFW       : actief met default deny"
+          - "  MOTD      : correct geconfigureerd"
+          - "============================================"
+          - "  Alle checks PASSED"
+          - "============================================"

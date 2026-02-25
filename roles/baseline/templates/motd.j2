@@ -1,0 +1,11 @@
+{{ ansible_managed | comment }}
+
+========================================
+  {{ baseline_motd_message }}
+========================================
+
+  Hostname : {{ ansible_hostname | default('unknown') }}
+  OS       : {{ ansible_distribution | default('Debian') }} {{ ansible_distribution_version | default('') }}
+  Contact  : {{ baseline_motd_contact }}
+
+========================================

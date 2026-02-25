@@ -1,0 +1,86 @@
+---
+- name: Verify baseline configuration
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    # --- NTP Verification ---
+    - name: "VERIFY | Check chrony is installed"
+      ansible.builtin.package_facts:
+        manager: apt
+
+    - name: "VERIFY | Assert chrony is present"
+      ansible.builtin.assert:
+        that:
+          - "'chrony' in ansible_facts.packages"
+
+    - name: "VERIFY | Check chrony service is running"
+      ansible.builtin.service_facts:
+
+    - name: "VERIFY | Assert chrony is running and enabled"
+      ansible.builtin.assert:
+        that:
+          - "ansible_facts.services['chrony.service'].state == 'running'"
+          - "ansible_facts.services['chrony.service'].status == 'enabled'"
+
+    - name: "VERIFY | Check chrony.conf contains NL pool servers"
+      ansible.builtin.slurp:
+        src: /etc/chrony/chrony.conf
+      register: chrony_conf
+
+    - name: "VERIFY | Assert NTP servers configured"
+      ansible.builtin.assert:
+        that:
+          - "'0.nl.pool.ntp.org' in chrony_conf.content | b64decode"
+
+    # --- SSH Verification ---
+    - name: "VERIFY | Read sshd_config"
+      ansible.builtin.slurp:
+        src: /etc/ssh/sshd_config
+      register: sshd_config
+
+    - name: "VERIFY | Assert SSH hardening settings"
+      ansible.builtin.assert:
+        that:
+          - "'PermitRootLogin prohibit-password' in sshd_config.content | b64decode"
+          - "'PasswordAuthentication no' in sshd_config.content | b64decode"
+          - "'MaxAuthTries 3' in sshd_config.content | b64decode"
+          - "'X11Forwarding no' in sshd_config.content | b64decode"
+
+    - name: "VERIFY | Check sshd_config permissions"
+      ansible.builtin.stat:
+        path: /etc/ssh/sshd_config
+      register: sshd_stat
+
+    - name: "VERIFY | Assert sshd_config is 0600"
+      ansible.builtin.assert:
+        that:
+          - "sshd_stat.stat.mode == '0600'"
+
+    # --- Firewall Verification ---
+    - name: "VERIFY | Check UFW is installed"
+      ansible.builtin.assert:
+        that:
+          - "'ufw' in ansible_facts.packages"
+
+    # --- MOTD Verification ---
+    - name: "VERIFY | Read MOTD file"
+      ansible.builtin.slurp:
+        src: /etc/motd
+      register: motd_file
+
+    - name: "VERIFY | Assert MOTD contains expected message"
+      ansible.builtin.assert:
+        that:
+          - "'Beheerd door Ansible via Semaphore' in motd_file.content | b64decode"
+
+    - name: "VERIFY | Check MOTD permissions"
+      ansible.builtin.stat:
+        path: /etc/motd
+      register: motd_stat
+
+    - name: "VERIFY | Assert MOTD is 0644"
+      ansible.builtin.assert:
+        that:
+          - "motd_stat.stat.mode == '0644'"

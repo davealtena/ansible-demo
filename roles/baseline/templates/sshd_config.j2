@@ -1,0 +1,30 @@
+# {{ ansible_managed }}
+# SSH Server Configuration - Hardened by Ansible
+
+Port {{ baseline_ssh_port }}
+AddressFamily any
+ListenAddress 0.0.0.0
+
+# Authentication
+PermitRootLogin {{ baseline_ssh_permit_root_login }}
+PasswordAuthentication {{ baseline_ssh_password_authentication }}
+MaxAuthTries {{ baseline_ssh_max_auth_tries }}
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+
+# Security
+X11Forwarding {{ baseline_ssh_x11_forwarding }}
+PermitEmptyPasswords no
+ChallengeResponseAuthentication no
+UsePAM yes
+
+# Logging
+SyslogFacility AUTH
+LogLevel INFO
+
+# Keep alive
+ClientAliveInterval 300
+ClientAliveCountMax 2
+
+# Subsystems
+Subsystem sftp /usr/lib/openssh/sftp-server

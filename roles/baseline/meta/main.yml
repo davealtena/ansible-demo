@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Dave Altena
+  description: Baseline hardening role voor Debian servers
+  license: MIT
+  min_ansible_version: "2.15"
+  platforms:
+    - name: Debian
+      versions:
+        - bookworm
+  galaxy_tags:
+    - security
+    - hardening
+    - baseline
+    - debian
+
+dependencies: []

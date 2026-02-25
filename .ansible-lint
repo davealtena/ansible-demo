@@ -1,0 +1,15 @@
+---
+profile: production
+
+exclude_paths:
+  - .github/
+  - venv/
+  - .venv/
+  - molecule/
+
+skip_list:
+  - yaml[truthy]
+
+warn_list:
+  - no-changed-when
+  - command-instead-of-module
