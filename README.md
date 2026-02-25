@@ -85,7 +85,7 @@ ansible-lint
 ├── ansible.cfg                  # Ansible configuratie
 ├── requirements.yml             # Galaxy collections
 ├── inventory/
-│   └── hosts.yml                # Inventory (192.168.1.100)
+│   └── hosts.yml                # Inventory (192.168.1.95)
 ├── roles/
 │   └── baseline/
 │       ├── defaults/main.yml    # Configureerbare variabelen
@@ -108,7 +108,7 @@ Maak een Debian 12 container aan op Proxmox:
 pct create 100 local:vztmpl/debian-12-standard_12.7-1_amd64.tar.zst \
   --hostname semaphore-demo \
   --memory 512 --swap 256 --cores 1 \
-  --net0 name=eth0,bridge=vmbr0,ip=192.168.1.100/24,gw=192.168.1.1 \
+  --net0 name=eth0,bridge=vmbr0,ip=192.168.1.95/24,gw=192.168.1.1 \
   --storage local-lvm \
   --rootfs local-lvm:4 \
   --start 1
@@ -136,7 +136,7 @@ pct start 100
 ## Semaphore Configuratie
 
 1. **Project aanmaken** - Koppel aan deze Git repository
-2. **Key Store** - Voeg SSH private key toe (voor toegang tot 192.168.1.100)
+2. **Key Store** - Voeg SSH private key toe (voor toegang tot 192.168.1.95)
 3. **Inventory** - Maak inventory aan, type "File", pad: `inventory/hosts.yml`
 4. **Task Templates**:
 
