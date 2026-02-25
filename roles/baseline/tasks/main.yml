@@ -1,7 +1,8 @@
 ---
-- name: Include NTP tasks
-  ansible.builtin.include_tasks: ntp.yml
-  tags: [ntp]
+- name: Include automatic updates tasks
+  ansible.builtin.include_tasks: updates.yml
+  tags: [updates]
+  when: baseline_unattended_upgrades_enabled
 
 - name: Include SSH hardening tasks
   ansible.builtin.include_tasks: ssh.yml
@@ -10,6 +11,10 @@
 - name: Include firewall tasks
   ansible.builtin.include_tasks: firewall.yml
   tags: [firewall]
+
+- name: Include sysctl hardening tasks
+  ansible.builtin.include_tasks: sysctl.yml
+  tags: [sysctl]
 
 - name: Include MOTD tasks
   ansible.builtin.include_tasks: motd.yml

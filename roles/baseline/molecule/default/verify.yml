@@ -5,34 +5,25 @@
   gather_facts: true
 
   tasks:
-    # --- NTP Verification ---
-    - name: "VERIFY | Check chrony is installed"
+    # --- Updates Verification ---
+    - name: "VERIFY | Check unattended-upgrades is installed"
       ansible.builtin.package_facts:
         manager: apt
 
-    - name: "VERIFY | Assert chrony is present"
+    - name: "VERIFY | Assert unattended-upgrades is present"
       ansible.builtin.assert:
         that:
-          - "'chrony' in ansible_facts.packages"
+          - "'unattended-upgrades' in ansible_facts.packages"
 
-    - name: "VERIFY | Check chrony service is running"
-      ansible.builtin.service_facts:
+    - name: "VERIFY | Check auto-upgrades config exists"
+      ansible.builtin.stat:
+        path: /etc/apt/apt.conf.d/20auto-upgrades
+      register: auto_upgrades_stat
 
-    - name: "VERIFY | Assert chrony is running and enabled"
+    - name: "VERIFY | Assert auto-upgrades config exists"
       ansible.builtin.assert:
         that:
-          - "ansible_facts.services['chrony.service'].state == 'running'"
-          - "ansible_facts.services['chrony.service'].status == 'enabled'"
-
-    - name: "VERIFY | Check chrony.conf contains NL pool servers"
-      ansible.builtin.slurp:
-        src: /etc/chrony/chrony.conf
-      register: chrony_conf
-
-    - name: "VERIFY | Assert NTP servers configured"
-      ansible.builtin.assert:
-        that:
-          - "'0.nl.pool.ntp.org' in chrony_conf.content | b64decode"
+          - auto_upgrades_stat.stat.exists
 
     # --- SSH Verification ---
     - name: "VERIFY | Read sshd_config"

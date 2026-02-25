@@ -1,0 +1,10 @@
+---
+- name: Apply sysctl hardening settings
+  ansible.posix.sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    sysctl_set: true
+    state: present
+    reload: true
+    ignoreerrors: true
+  loop: "{{ baseline_sysctl_settings | dict2items }}"

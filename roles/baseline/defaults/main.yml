@@ -1,12 +1,7 @@
 ---
-# NTP
-baseline_ntp_package: chrony
-baseline_ntp_service: chrony
-baseline_ntp_servers:
-  - 0.nl.pool.ntp.org
-  - 1.nl.pool.ntp.org
-  - 2.nl.pool.ntp.org
-  - 3.nl.pool.ntp.org
+# Automatic Security Updates
+baseline_unattended_upgrades_enabled: true
+baseline_unattended_upgrades_mail: ""
 
 # SSH Hardening
 baseline_ssh_port: 22
@@ -21,6 +16,21 @@ baseline_firewall_default_incoming: deny
 baseline_firewall_default_outgoing: allow
 baseline_firewall_allowed_ports:
   - {port: "{{ baseline_ssh_port }}", proto: tcp, comment: "SSH"}
+
+# Sysctl Hardening
+baseline_sysctl_settings:
+  # Disable IP forwarding
+  net.ipv4.ip_forward: 0
+  # Ignore ICMP redirects
+  net.ipv4.conf.all.accept_redirects: 0
+  net.ipv4.conf.default.accept_redirects: 0
+  # Ignore source-routed packets
+  net.ipv4.conf.all.accept_source_route: 0
+  net.ipv4.conf.default.accept_source_route: 0
+  # Enable SYN flood protection
+  net.ipv4.tcp_syncookies: 1
+  # Log martian packets
+  net.ipv4.conf.all.log_martians: 1
 
 # MOTD
 baseline_motd_message: "Beheerd door Ansible via Semaphore"
